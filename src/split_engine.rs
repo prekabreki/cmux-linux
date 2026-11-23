@@ -1146,8 +1146,14 @@ fn replace_child_in_parent(
             .map(|w| w == old_widget)
             .unwrap_or(false)
         {
+            // new_widget is usually a child of old_widget (the Paned being
+            // collapsed). GtkPaned refuses a child that still has a parent and
+            // leaves the old Paned — with the closed pane's GLArea inside it —
+            // on screen, so unparent it first (#12).
+            remove_widget_from_parent(new_widget);
             paned.set_start_child(Some(new_widget));
         } else {
+            remove_widget_from_parent(new_widget);
             paned.set_end_child(Some(new_widget));
         }
     } else if let Some(stack) = parent.downcast_ref::<gtk4::Stack>() {
